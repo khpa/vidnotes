@@ -1,6 +1,22 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
+const mongoose = require('mongoose');
+
 const app = express();
+
+//map global promise
+
+mongoose.Promise = global.Promise;
+
+//connect to mongoose
+
+mongoose.connect('mongodb://localhost/videonotes-dev')
+.then((response)=>{
+console.log('MongoDB Connected')
+})
+.catch((error)=>{
+console.log('error')
+})
 
 //handlebars middleware
 
