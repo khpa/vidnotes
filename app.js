@@ -1,7 +1,8 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const bodyParser = require('body-parser'); 
+const mongoose = require('mongoose'); //db
+const methodOverride = require('method-override');  //put request
 
 
 const app = express();
@@ -24,19 +25,22 @@ mongoose.connect('mongodb://localhost/videonotes-dev')
 require('./models/Idea');
 
 const Idea = mongoose.model('ideas');
-//handlebars middleware
 
+//handlebars middleware
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
 
 //body-parser middleware
-
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({
     extended: false
 }));
+
+//method-override middleware
+// override with POST having ?_method=DELETE
+app.use(methodOverride('_method'));
 
 // parse application/json
 app.use(bodyParser.json());
@@ -77,6 +81,19 @@ app.get('/ideas/add', (req, res) => {
     res.render('ideas/add')
 });
 
+//edit idea form
+// /:id is the parameter passed to the page (which idea/note we edit)
+app.get('/ideas/edit/:id', (req, res) => {
+    Idea.findOne({
+        _id: req.params.id
+    })
+    .then (idea=>{
+        res.render('ideas/edit',{
+            idea:idea
+        })
+    })
+});
+
 //process form
 
 app.post('/ideas', (req, res) => {
@@ -115,6 +132,23 @@ app.post('/ideas', (req, res) => {
             })
     }
 
+});
+
+//edit form process (put request with express/method-override)
+
+app.put('/ideas/:id',(req, res)=>{
+   Idea.findOne({
+       _id: req.params.id
+   })
+   .then(idea=>{
+       //new values
+       idea.title = req.body.title;
+       idea.details = req.body.details;
+       idea.save()
+       .then(idea => {
+           res.redirect('/ideas');
+       })
+   });
 });
 
 const port = 5000;
