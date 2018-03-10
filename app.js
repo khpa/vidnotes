@@ -43,6 +43,26 @@ app.use(bodyParser.urlencoded({
 // override with POST having ?_method=DELETE
 app.use(methodOverride('_method'));
 
+//connect-session middleware
+app.use(session({
+    secret: 'secret', //can be anything, 'secret' is just fine
+    resave: true, //set to true
+    saveUninitialized: true
+    //cookie removed from here
+  }));
+
+//connect-flash middleware  
+app.use(flash());  
+
+//global variables for flash messages - middlewares
+
+app.use(function(req, res, next){
+    res.locals.success_msg = req.flash('success_msg'); //success_msg can be anything
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    next();
+});
+
 // parse application/json
 app.use(bodyParser.json());
 
@@ -126,6 +146,8 @@ app.post('/ideas', (req, res) => {
         new Idea(newUser)
             .save()
             .then(idea => {
+                req.flash('success_msg', 'Video Note Added')
+
                 res.redirect('/ideas');
             })
             .catch(err => {
@@ -147,6 +169,7 @@ app.put('/ideas/:id',(req, res)=>{
        idea.details = req.body.details;
        idea.save()
        .then(idea => {
+        req.flash('success_msg', 'Video Note Updated!')
            res.redirect('/ideas');
        });
    });
@@ -158,6 +181,7 @@ app.delete('/ideas/:id',(req, res)=>{
 
     Idea.remove({_id:req.params.id})
     .then(()=>{
+        req.flash('success_msg', 'Video Note Removed')
         res.redirect('/ideas');
     });
 
