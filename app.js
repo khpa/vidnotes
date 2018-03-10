@@ -3,7 +3,8 @@ const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser'); 
 const mongoose = require('mongoose'); //db
 const methodOverride = require('method-override');  //put request
-
+const session = require('express-session'); //for flash messaging (required for connect-flash and later for auth)
+const flash = require('connect-flash'); //Flash message middleware for Connect and Express
 
 const app = express();
 
@@ -147,9 +148,20 @@ app.put('/ideas/:id',(req, res)=>{
        idea.save()
        .then(idea => {
            res.redirect('/ideas');
-       })
+       });
    });
 });
+
+//delete form process (delete request with express/method-override)
+
+app.delete('/ideas/:id',(req, res)=>{
+
+    Idea.remove({_id:req.params.id})
+    .then(()=>{
+        res.redirect('/ideas');
+    });
+
+ });
 
 const port = 5000;
 
